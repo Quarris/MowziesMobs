@@ -30,7 +30,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
@@ -69,12 +68,10 @@ public abstract class MowzieEntity extends EntityCreature implements IEntityAddi
     private DamageSource killDataCause;
     private EntityPlayer killDataAttackingPlayer;
 
-    private final BossInfoServer bossInfo = (BossInfoServer)(new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE, BossInfo.Overlay.PROGRESS));
+    private final MMBossInfoServer bossInfo = new MMBossInfoServer(this);
 
     public MowzieEntity(World world) {
         super(world);
-        bossInfo.setColor(bossBarColor());
-        bossInfo.setVisible(hasBossBar());
     }
 
     @Override
@@ -200,7 +197,7 @@ public abstract class MowzieEntity extends EntityCreature implements IEntityAddi
     @Override
     protected void updateAITasks() {
         super.updateAITasks();
-        this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
+        this.bossInfo.update();
     }
 
     protected void onAnimationFinish(Animation animation) {}
@@ -521,24 +518,14 @@ public abstract class MowzieEntity extends EntityCreature implements IEntityAddi
 
     public abstract Animation getHurtAnimation();
 
-    /**
-     * Add the given player to the list of players tracking this entity. For instance, a player may track a boss in
-     * order to view its associated boss bar.
-     */
     @Override
-    public void addTrackingPlayer(EntityPlayerMP player)
-    {
+    public void addTrackingPlayer(EntityPlayerMP player) {
         super.addTrackingPlayer(player);
         this.bossInfo.addPlayer(player);
     }
 
-    /**
-     * Removes the given player from the list of players tracking this entity. See {@link Entity#addTrackingPlayer} for
-     * more information on tracking.
-     */
     @Override
-    public void removeTrackingPlayer(EntityPlayerMP player)
-    {
+    public void removeTrackingPlayer(EntityPlayerMP player) {
         super.removeTrackingPlayer(player);
         this.bossInfo.removePlayer(player);
     }
@@ -546,15 +533,13 @@ public abstract class MowzieEntity extends EntityCreature implements IEntityAddi
     @Override
     public void readEntityFromNBT(NBTTagCompound compound) {
         super.readEntityFromNBT(compound);
-
-        if (this.hasCustomName())
-        {
+        if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
     }
 
-    public void setCustomNameTag(String name)
-    {
+    @Override
+    public void setCustomNameTag(String name) {
         super.setCustomNameTag(name);
         this.bossInfo.setName(this.getDisplayName());
     }
